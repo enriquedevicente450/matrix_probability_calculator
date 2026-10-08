@@ -1,0 +1,124 @@
+#include <iostream>
+#include <array>
+#include <algorithm>
+#include <cstdint>
+#include <thread>
+#include <vector>
+
+using namespace std;
+
+
+inline int determinant4(const array<int, 16>& m)
+{
+    const int a = m[0];
+    const int b = m[1];
+    const int c = m[2];
+    const int d = m[3];
+
+    const int e = m[4];
+    const int f = m[5];
+    const int g = m[6];
+    const int h = m[7];
+
+    const int i = m[8];
+    const int j = m[9];
+    const int k = m[10];
+    const int l = m[11];
+
+    const int mm = m[12];
+    const int n = m[13];
+    const int o = m[14];
+    const int p = m[15];
+
+    return
+        a * (
+            f * (k*p - l*o)
+          - g * (j*p - l*n)
+          + h * (j*o - k*n)
+        )
+      - b * (
+            e * (k*p - l*o)
+          - g * (i*p - l*mm)
+          + h * (i*o - k*mm)
+        )
+      + c * (
+            e * (j*p - l*n)
+          - f * (i*p - l*mm)
+          + h * (i*n - j*mm)
+        )
+      - d * (
+            e * (j*o - k*n)
+          - f * (i*o - k*mm)
+          + g * (i*n - j*mm)
+        );
+}
+
+
+uint64_t searchStartingWith(int first)
+{
+    array<int, 16> matrix;
+
+    matrix[0] = first;
+
+    int index = 1;
+
+    for (int x = 1; x <= 16; ++x)
+    {
+        if (x != first)
+            matrix[index++] = x;
+    }
+
+    uint64_t zeroCount = 0;
+
+    do
+    {
+        if (determinant4(matrix) == 0)
+            ++zeroCount;
+
+    } while (next_permutation(
+        matrix.begin() + 1,
+        matrix.end()
+    ));
+
+    return zeroCount;
+}
+
+
+int main()
+{
+    const unsigned int threadCount =
+        thread::hardware_concurrency();
+
+    cout << "Threads available: "
+         << threadCount << '\n';
+
+
+    vector<thread> threads;
+    vector<uint64_t> results(16);
+
+
+    for (int first = 1; first <= 16; ++first)
+    {
+        threads.emplace_back(
+            [&results, first]()
+            {
+                results[first - 1] =
+                    searchStartingWith(first);
+            }
+        );
+    }
+
+
+    for (auto& t : threads)
+        t.join();
+
+
+    uint64_t totalZero = 0;
+
+    for (uint64_t x : results)
+        totalZero += x;
+
+
+    cout << "Determinant = 0: "
+         << totalZero << '\n';
+}
