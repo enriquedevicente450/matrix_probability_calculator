@@ -1,0 +1,39 @@
+import numpy as np
+import random as rand
+import itertools
+
+def factorial(n):
+  if n-1 > 0:
+    return n*factorial(n-1)
+  else:
+    return n
+
+matrix_size = 4
+
+total_permutations = factorial(matrix_size**2)
+
+print(total_permutations)
+
+count = 0
+
+valid_matrices = []
+dets = []
+
+limit = 100000
+
+for perm in itertools.permutations(range(1, matrix_size**2+1)):
+  matrix = np.random.permutation(np.arange(1, matrix_size**2+1)).reshape(matrix_size, matrix_size)
+  det = np.linalg.det(matrix)
+  dets.append(det)
+  print("det("+str(count+1)+") = " + str(det))
+  count +=1
+  if 0.1< det < 0.1:
+    valid_matrices.append(matrix)
+  if count > limit:
+    break
+
+for i in valid_matrices:
+  print(i)
+print(len(valid_matrices))
+print(dets)
+print(len(valid_matrices)/limit)
